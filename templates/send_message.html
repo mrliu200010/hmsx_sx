@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+</head>
+<body>
+{#    <form action="{% url 'sms_send' %}" method="get">#}
+{#        <form action="{% url 'sms_check' %}" method="get">#}
+        <ul>
+            <li>
+                <label>手机号:</label>
+          <input type="text" name="phone" id="phone">
+            </li>
+        <li>
+            <label></label>
+          <button type="button" name="'btn1" id="btn1">发送短信验证码</button>
+          <span class="msg"></span>
+        </li>
+            <li>
+                <label>验证码:</label>
+                <input type="text" name="code" id="code">
+                <span class="error_tip" style="color: red">验证码区分大小写</span>
+            </li>
+        </ul>
+{#        </form>#}
+{#    </form>#}
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      var btn1 = $('#btn1');
+      var count=60;
+      var timer = null;
+      btn1.click(function () {
+        phone = $('#phone').val();
+        if (phone==''){
+          alert('请输入手机号码');
+          return false
+       }
+        $.ajax({
+          type:'get',
+        
+ url:'http://127.0.0.1:8000/sms_send/?phone='+phone,
+          success: function (msg) {
+            var obj=eval("("+msg+")");
+            if(obj.Message=='OK'){
+              $('.msg').html('短信发送成功')
+           }else{
+              $('.msg').html('短信发送失败')
+           }
+         },
+          error:function (res) {
+            console.log(res.status)
+         }
+       });
+        $(this).attr("disabled",'true');
+        var _this=$(this);
+        timer=setInterval(function () {
+          count--;
+          console.log('剩余时间:'+count);
+          if(count>=0){
+            _this.html(count+"秒s后重发")
+           }else {
+            _this.disabled = false;
+            clearInterval(timer);
+            _this.html("重新发送");
+            count = 60;
+            $('#btn1').removeAttr("disabled")
+         }
+       },1000);
+     });  //特效 完成
+      //短信验证
+      $('#code').change(function () {
+        var phone = $('#phone').val();
+        var code = $('#code').val();
+        $.ajax({
+          type:'get',
+                   url:'http://127.0.0.1:8000/sms_check/',
+          data:'phone='+phone+'&code='+code,
+          success:function (msg) {
+            if(msg.code=='200'){
+              $('.error_tip').html('验证码正确')
+           }else{
+              $('.error_tip').html('验证码错误')
+           }
+         },
+          error:function (res) {
+            console.log(res.status)
+         }
+       })
+     });
+   })
+  </script>
+</body>
+</html>
